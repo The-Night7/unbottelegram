@@ -14,6 +14,8 @@ from commands.travel_commands import travel_command, choose_floor, choose_biome,
 from commands.battle_commands import battle_command, handle_battle_action
 from commands.boss_commands import boss_command, confirm_boss_battle, handle_boss_action
 from commands.quest_commands import quest_command, handle_quest_action
+from commands.utility_commands import inventory_command, shop_command, buy_command, heal_command
+from commands.player_commands import players_command, interact_command, choose_interaction, handle_interaction, choose_trade_item, choose_trade_amount, confirm_trade
 
 def main() -> None:
     """Start the bot."""
@@ -38,7 +40,7 @@ def main() -> None:
     
     # Travel conversation
     travel_handler = ConversationHandler(
-        entry_points=[CommandHandler("travel", travel_command)],
+        entry_points=[CommandHandler("travel", travel_command), CommandHandler("location", travel_command)],
         states={
             CHOOSING_FLOOR: [MessageHandler(filters.TEXT & ~filters.COMMAND, choose_floor)],
             CHOOSING_BIOME: [MessageHandler(filters.TEXT & ~filters.COMMAND, choose_biome)],
@@ -65,6 +67,18 @@ def main() -> None:
         fallbacks=[CommandHandler("cancel", cancel)]
     )
     
+    # Player interaction conversation
+    interaction_handler = ConversationHandler(
+        entry_points=[CommandHandler("interact", interact_command)],
+        states={
+            CHOOSING_INTERACTION: [MessageHandler(filters.TEXT & ~filters.COMMAND, choose_interaction)],
+            CHOOSING_TRADE_ITEM: [MessageHandler(filters.TEXT & ~filters.COMMAND, choose_trade_item)],
+            CHOOSING_TRADE_AMOUNT: [MessageHandler(filters.TEXT & ~filters.COMMAND, choose_trade_amount)],
+            CONFIRMING_TRADE: [MessageHandler(filters.TEXT & ~filters.COMMAND, confirm_trade)],
+        },
+        fallbacks=[CommandHandler("cancel", cancel)]
+    )
+
     # Add command handlers
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
@@ -75,6 +89,12 @@ def main() -> None:
     application.add_handler(boss_handler)
     application.add_handler(CommandHandler("quest", quest_command))
     application.add_handler(CommandHandler("floors", floors_command))
+    application.add_handler(CommandHandler("inventory", inventory_command))
+    application.add_handler(CommandHandler("shop", shop_command))
+    application.add_handler(CommandHandler("buy", buy_command))
+    application.add_handler(CommandHandler("heal", heal_command))
+    application.add_handler(CommandHandler("players", players_command))
+    application.add_handler(interaction_handler)
     
     # Add message handlers
     application.add_handler(MessageHandler(

@@ -1,7 +1,20 @@
 # -*- coding: utf-8 -*-
 
 # Commandes utilitaires (inventaire, boutique, soins)
-from main import *
+from telegram import Update
+from telegram.ext import ContextTypes
+
+# Import des fonctions nécessaires depuis sao_bot_part1
+from sao_bot_part1 import get_player_data, save_player
+# Fonction utilitaire pour vérifier si un joueur existe
+async def check_player_exists(update, player):
+    """Vérifie si le joueur existe et envoie un message si ce n'est pas le cas."""
+    if not player:
+        await update.message.reply_text(
+            "Vous n'avez pas encore de personnage. Utilisez /create_character pour en créer un."
+        )
+        return False
+    return True
 
 # Inventory command
 async def inventory_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -9,21 +22,18 @@ async def inventory_command(update: Update, context: ContextTypes.DEFAULT_TYPE) 
     user_id = str(update.effective_user.id)
     player = get_player_data(user_id)
     
-    if not player:
-        await update.message.reply_text(
-            "Vous n'avez pas encore de personnage. Utilisez /create_character pour en créer un."
-        )
+    if not await check_player_exists(update, player):
         return
     
-    if not player["items"]:
+    if not player.get("items", {}):
         await update.message.reply_text("Votre inventaire est vide.")
         return
     
     inventory_text = "Votre inventaire:\n\n"
-    for item, count in player["items"].items():
+    for item, count in player.get("items", {}).items():
         inventory_text += f"- {item}: {count}\n"
     
-    inventory_text += f"\nCol: {player['col']}"
+    inventory_text += f"\nCol: {player.get('col', 0)}"
     
     await update.message.reply_text(inventory_text)
 
@@ -33,10 +43,7 @@ async def shop_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     user_id = str(update.effective_user.id)
     player = get_player_data(user_id)
     
-    if not player:
-        await update.message.reply_text(
-            "Vous n'avez pas encore de personnage. Utilisez /create_character pour en créer un."
-        )
+    if not await check_player_exists(update, player):
         return
     
     # Shop items
@@ -48,7 +55,7 @@ async def shop_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         "Enhanced Sword": 500
     }
     
-    shop_text = f"Bienvenue à la boutique! Vous avez {player['col']} Col.\n\n"
+    shop_text = f"Bienvenue à la boutique! Vous avez {player.get('col', 0)} Col.\n\n"
     shop_text += "Articles disponibles:\n"
     
     for item, price in shop_items.items():
@@ -63,10 +70,7 @@ async def buy_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     user_id = str(update.effective_user.id)
     player = get_player_data(user_id)
     
-    if not player:
-        await update.message.reply_text(
-            "Vous n'avez pas encore de personnage. Utilisez /create_character pour en créer un."
-        )
+    if not await check_player_exists(update, player):
         return
     
     # Shop items
@@ -112,14 +116,17 @@ async def buy_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
     price = shop_items[item_name]
     total_cost = price * quantity
     
-    if player["col"] < total_cost:
+    if player.get('col', 0) < total_cost:
         await update.message.reply_text(
             f"Vous n'avez pas assez de Col. Il vous faut {total_cost} Col."
         )
         return
     
     # Process purchase
-    player["col"] -= total_cost
+    player['col'] -= total_cost
+    
+    if "items" not in player:
+        player["items"] = {}
     
     if item_name not in player["items"]:
         player["items"][item_name] = 0
@@ -138,17 +145,14 @@ async def heal_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     user_id = str(update.effective_user.id)
     player = get_player_data(user_id)
     
-    if not player:
-        await update.message.reply_text(
-            "Vous n'avez pas encore de personnage. Utilisez /create_character pour en créer un."
-        )
+    if not await check_player_exists(update, player):
         return
     
-    if player["hp"] >= player["max_hp"]:
+    if player.get("hp", 0) >= player.get("max_hp", 100):
         await update.message.reply_text("Vous avez déjà tous vos points de vie.")
         return
     
-    if player["items"].get("Health Potion", 0) <= 0:
+    if not player.get("items", {}).get("Health Potion", 0) > 0:
         await update.message.reply_text(
             "Vous n'avez pas de potions de soin. Achetez-en à la boutique avec /shop."
         )
@@ -156,7 +160,11 @@ async def heal_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     
     # Use potion
     heal_amount = 50
-    player["hp"] = min(player["max_hp"], player["hp"] + heal_amount)
+    player["hp"] = min(player.get("max_hp", 100), player.get("hp", 0) + heal_amount)
+    
+    if "items" not in player:
+        player["items"] = {}
+    
     player["items"]["Health Potion"] -= 1
     
     if player["items"]["Health Potion"] <= 0:

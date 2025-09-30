@@ -24,10 +24,15 @@ from sao_bot_part1 import (
 )
 
 from sao_bot_part2 import (
-    inventory_command, floors_command, floor_info_callback, floor_info_command, biome_info_command,
-    explore_command, battle_command, handle_battle_action, shop_command, buy_command,
+    floors_command, floor_info_callback, floor_info_command, biome_info_command,
+    explore_command, battle_command, handle_battle_action,
     boss_command, confirm_boss_battle, handle_boss_action, players_command, interact_command,
-    heal_command, CHOOSING_BATTLE_ACTION, CONFIRMING_BOSS_BATTLE, CHOOSING_BOSS_ACTION
+    CHOOSING_BATTLE_ACTION, CONFIRMING_BOSS_BATTLE, CHOOSING_BOSS_ACTION
+)
+
+# Import des commandes utilitaires
+from commands.utility_commands import (
+    inventory_command, shop_command, buy_command, heal_command
 )
 
 # Enable logging
@@ -42,10 +47,10 @@ def main() -> None:
     """Start the bot."""
     # Initialize monster data
     init_monster_data()
-    
+
     # Load environment variables
     load_dotenv()
-    
+
     # Create the Application
     token = os.getenv("TELEGRAM_BOT_TOKEN")
     if not token:
@@ -53,7 +58,6 @@ def main() -> None:
         return
 
     application = Application.builder().token(token).build()
-
     # Character creation conversation
     character_creation_handler = ConversationHandler(
         entry_points=[CommandHandler("create_character", create_character)],

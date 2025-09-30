@@ -1,1 +1,37 @@
-{}
+{
+    "1683409447": {
+        "name": "Octo",
+        "weapon": "Bow",
+        "level": 1,
+        "exp": 0,
+        "hp": 100,
+        "max_hp": 100,
+        "attack": 10,
+        "defense": 5,
+        "agility": 5,
+        "location": {
+            "floor": "Floor 1 - Tolbana",
+            "biome": "Plains of Beginning"
+        },
+        "items": {
+            "Health Potion": 3,
+            "Teleport Crystal": 1,
+            "Boar Meat": 2
+        },
+        "col": 560,
+        "skills": [],
+        "quests": [],
+        "completed_quests": [],
+        "defeated_bosses": [],
+        "unlocked_floors": [
+            "Floor 1 - Tolbana"
+        ],
+        "unlocked_biomes": {
+            "Floor 1 - Tolbana": [
+                "Plains of Beginning"
+            ]
+        },
+        "last_battle": 0,
+        "created_at": 1759190298.5100682
+    }
+}

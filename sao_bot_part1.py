@@ -344,12 +344,12 @@ async def profile_command(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         f"Défense: {player['defense']}\n"
         f"Agilité: {player['agility']}\n"
         f"Arme: {player['weapon']}\n"
-        f"Localisation: {player['location']['floor']}, {player['location']['biome']}\n"
+        f"Localisation: {player['location']}\n"  # Modification ici - accès direct à location comme une chaîne
         f"Col: {player['col']}\n"
         f"Objets: {', '.join([f'{item} x{count}' for item, count in player['items'].items()])}\n\n"
-        f"Étages débloqués: {len(player['unlocked_floors'])}\n"
-        f"Boss vaincus: {len(player['defeated_bosses'])}\n"
-        f"Quêtes terminées: {len(player['completed_quests'])}"
+        f"Étages débloqués: {len(player.get('unlocked_floors', []))}\n"
+        f"Boss vaincus: {len(player.get('defeated_bosses', []))}\n"
+        f"Quêtes terminées: {len(player.get('completed_quests', []))}"
     )
 
     await update.message.reply_text(
@@ -371,12 +371,12 @@ async def location_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
     # Get accessible floors for the player
     accessible_floors = get_accessible_floors(player)
-    
+
     keyboard = [[floor] for floor in accessible_floors]
     reply_markup = ReplyKeyboardMarkup(keyboard, one_time_keyboard=True)
 
     await update.message.reply_text(
-        f"Vous êtes actuellement à {player['location']['floor']}, {player['location']['biome']}.\n"
+        f"Vous êtes actuellement à {player['location']}.\n"  # Modification ici - accès direct à location comme une chaîne
         "Vers quel étage souhaitez-vous voyager?",
         reply_markup=reply_markup
     )
@@ -409,7 +409,7 @@ async def choose_floor(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
 
     # Get accessible biomes for the player on this floor
     accessible_biomes = get_accessible_biomes(player, floor_name)
-    
+
     keyboard = [[biome] for biome in accessible_biomes]
     keyboard.append(["Annuler"])
     reply_markup = ReplyKeyboardMarkup(keyboard, one_time_keyboard=True)
@@ -426,7 +426,7 @@ async def choose_floor(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
 async def choose_biome(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Handle biome selection."""
     biome_name = update.message.text
-    
+
     if biome_name == "Annuler":
         await update.message.reply_text(
             "Voyage annulé.",
@@ -455,17 +455,17 @@ async def choose_biome(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     # Update player location
     player["location"]["floor"] = floor_name
     player["location"]["biome"] = biome_name
-    
+
     # Update unlocked floors and biomes
     if floor_name not in player["unlocked_floors"]:
         player["unlocked_floors"].append(floor_name)
-    
+
     if floor_name not in player["unlocked_biomes"]:
         player["unlocked_biomes"][floor_name] = []
-    
+
     if biome_name not in player["unlocked_biomes"][floor_name]:
         player["unlocked_biomes"][floor_name].append(biome_name)
-    
+
     save_player(user_id, player)
 
     # Generate biome info message

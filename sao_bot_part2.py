@@ -4,11 +4,12 @@ from telegram import Update, ReplyKeyboardMarkup, ReplyKeyboardRemove, InlineKey
 from telegram.ext import ContextTypes, ConversationHandler
 
 # Import des données du jeu et des fonctions utilitaires
-from palier import FLOORS_INFO, SHOP_ITEMS
-from player_utils import get_player_data, save_player, level_up_check
-from monster_utils import get_monster_info, get_available_monsters, get_boss_info
-from floor_utils import get_accessible_floors, generate_floor_info_message, generate_biome_info_message
-from player_utils import get_online_players
+from palier import FLOORS_INFO
+from palier.palier import SHOP_ITEMS
+from utils.player import get_player_data, save_player, level_up_check
+from utils.monster import get_monster_info, get_available_monsters, get_boss_info
+from utils.floor import get_accessible_floors, generate_floor_info_message, generate_biome_info_message
+from utils.player import get_online_players
 
 from sao_bot_part1 import CHOOSING_BOSS_ACTION, CONFIRMING_BOSS_BATTLE, CHOOSING_BATTLE_ACTION
 

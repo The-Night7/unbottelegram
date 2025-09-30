@@ -43,6 +43,9 @@ def main() -> None:
     # Initialize monster data
     init_monster_data()
     
+    # Load environment variables
+    load_dotenv()
+    
     # Create the Application
     token = os.getenv("TELEGRAM_BOT_TOKEN")
     if not token:

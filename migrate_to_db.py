@@ -30,6 +30,11 @@ def migrate():
     count = 0
     for user_id, player_data in data.items():
         try:
+            # Correction: SQLite n'accepte pas les dictionnaires directement.
+            # Si 'location' est un dictionnaire, on le convertit en chaîne JSON.
+            if 'location' in player_data and isinstance(player_data['location'], dict):
+                player_data['location'] = json.dumps(player_data['location'])
+
             database.save_player(user_id, player_data)
             count += 1
             print(f"Joueur {player_data.get('name', user_id)} migré avec succès.")

@@ -1,57 +1,65 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import json
+"""
+Mise à jour: Ce module utilise maintenant SQLite au lieu d'un fichier JSON
+pour une meilleure sécurité des données et de meilleures performances.
+"""
 
-# Data storage
-DATA_FILE = "../player_data.json"
-
-def load_player_data():
-    """Load player data from file"""
-    try:
-        with open(DATA_FILE, 'r') as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return {}
-
-
-def save_player_data(data):
-    """Save player data to file"""
-    with open(DATA_FILE, 'w') as f:
-        json.dump(data, f, indent=4)
-
+import database
 
 def get_player_data(user_id):
-    """Get player data for a specific user"""
-    data = load_player_data()
-    return data.get(str(user_id))
+    """
+    Récupère les données d'un joueur spécifique.
+    (Remplacement transparent de l'ancienne fonction JSON)
+    """
+    return database.get_player(str(user_id))
 
 
 def save_player(user_id, player_data):
-    """Save player data for a specific user"""
-    data = load_player_data()
-    data[str(user_id)] = player_data
-    save_player_data(data)
+    """
+    Sauvegarde les données d'un joueur spécifique dans la base de données.
+    """
+    database.save_player(str(user_id), player_data)
 
 
 def get_online_players():
-    """Get list of online players (simplified - all saved players are considered online)"""
-    data = load_player_data()
-    return data
+    """
+    Récupère la liste de tous les joueurs.
+    Dans une version plus avancée, on pourrait filtrer par "dernière activité".
+    """
+    return database.get_all_players()
 
 
 def level_up_check(player):
-    """Check if player can level up and apply changes"""
-    # Simple level up formula: level * 100 exp needed
+    """Vérifie si le joueur peut monter de niveau et applique les changements"""
+    # Formule simple de montée de niveau : niveau * 100 exp requis
     exp_needed = player["level"] * 100
 
     if player["exp"] >= exp_needed:
         player["level"] += 1
         player["exp"] -= exp_needed
         player["max_hp"] += 20
-        player["hp"] = player["max_hp"]  # Heal on level up
+        player["hp"] = player["max_hp"]  # Soin complet lors d'une montée de niveau
         player["attack"] += 3
         player["defense"] += 2
         player["agility"] += 2
         return True
     return False
+
+def format_player_stats(player):
+    """Formate les statistiques du joueur pour l'affichage (Profil)"""
+    stats = (
+        f"👤 Nom: {player['name']}\n"
+        f"📊 Niveau: {player['level']}\n"
+        f"✨ EXP: {player['exp']}/{player['level'] * 100}\n"
+        f"❤️ HP: {player['hp']}/{player['max_hp']}\n"
+        f"⚔️ Attaque: {player['attack']}\n"
+        f"🛡️ Défense: {player['defense']}\n"
+        f"🏃 Agilité: {player['agility']}\n"
+        f"🗡️ Arme: {player['weapon']}\n"
+        f"📍 Localisation: {player['location']}\n"
+        f"💰 Col: {player['col']}\n"
+        f"🎒 Objets: {', '.join([f'{item} x{count}' for item, count in player['items'].items()]) if player['items'] else 'Vide'}"
+    )
+    return stats
